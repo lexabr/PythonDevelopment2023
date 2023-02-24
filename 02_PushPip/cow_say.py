@@ -7,7 +7,13 @@ def call_cow(args):
         cow_words = list_cows()
         print(cow_words)
     else:
-        preset = None
+        preset=None
+        preset_kwargs = vars(args)
+        for p in 'bdgpstwy':
+            if preset_kwargs[p]:
+                preset=p
+                break
+
         cow_words = cowsay(message=args.message, cow=args.f, preset=preset, eyes=args.e[:2],
                            tongue=args.T[:2], width=args.W, wrap_text=not args.n)
         print(cow_words)
