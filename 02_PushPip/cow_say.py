@@ -7,7 +7,7 @@ def call_cow(args):
         cow_words = list_cows()
         print(cow_words)
     else:
-        preset=None
+        preset = None
         preset_kwargs = vars(args)
         for p in 'bdgpstwy':
             if preset_kwargs[p]:
