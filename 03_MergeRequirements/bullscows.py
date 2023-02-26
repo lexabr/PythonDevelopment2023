@@ -1,5 +1,6 @@
 from typing import Tuple, List
 import random
+import argparse
 
 def bullscows(guess: str, secret: str) -> Tuple[int, int]:
     cows = len(set(guess) & set(secret))
@@ -33,3 +34,10 @@ def gameplay(ask: callable, inform: callable, words: List[str]) -> int:
     inform("Быки: {}, Коровы: {}", bulls, cows)
 
     return tries_cnt
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(prog="Bulls and cows game")
+    parser.add_argument("path_to_words", type=str)
+    parser.add_argument("length", type=int, default=5, nargs="?")
+    args = parser.parse_args()
