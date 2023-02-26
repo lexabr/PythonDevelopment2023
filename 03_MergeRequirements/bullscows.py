@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List
 
 def bullscows(guess: str, secret: str) -> Tuple[int, int]:
     cows = len(set(guess) & set(secret))
@@ -11,3 +11,10 @@ def bullscows(guess: str, secret: str) -> Tuple[int, int]:
 
 def inform(format_string: str, bulls: int, cows: int) -> None:
     print(format_string.format(bulls, cows))
+
+
+def ask(prompt: str, valid: List[str] = None) -> str:
+    inp = input(prompt)
+    while valid is not None and inp not in valid:
+        inp = input(prompt)
+    return inp
