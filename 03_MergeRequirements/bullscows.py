@@ -3,6 +3,7 @@ import random
 import argparse
 import urllib.request
 import urllib.error
+import cowsay
 
 def bullscows(guess: str, secret: str) -> Tuple[int, int]:
     cows = len(set(guess) & set(secret))
@@ -14,13 +15,14 @@ def bullscows(guess: str, secret: str) -> Tuple[int, int]:
 
 
 def inform(format_string: str, bulls: int, cows: int) -> None:
-    print(format_string.format(bulls, cows))
+    print(cowsay.cowsay(format_string.format(bulls, cows),
+                        cow=random.choice(cowsay.list_cows())))
 
 
 def ask(prompt: str, valid: List[str] = None) -> str:
-    inp = input(prompt)
+    inp = input(cowsay.cowsay(prompt, cow=random.choice(cowsay.list_cows())))
     while valid is not None and inp not in valid:
-        inp = input(prompt)
+        inp = input(cowsay.cowsay(prompt, cow=random.choice(cowsay.list_cows())))
     return inp
 
 
