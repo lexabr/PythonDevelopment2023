@@ -1,4 +1,5 @@
 from typing import Tuple, List
+import random
 
 def bullscows(guess: str, secret: str) -> Tuple[int, int]:
     cows = len(set(guess) & set(secret))
@@ -18,3 +19,17 @@ def ask(prompt: str, valid: List[str] = None) -> str:
     while valid is not None and inp not in valid:
         inp = input(prompt)
     return inp
+
+
+def gameplay(ask: callable, inform: callable, words: List[str]) -> int:
+    hidden_word = random.choice(words)
+    tries_cnt = 1
+
+    while (inp := ask("Введите слово: ", words)) != hidden_word:
+        bulls, cows = bullscows(inp, hidden_word)
+        inform("Быки: {}, Коровы: {}", bulls, cows)
+        tries_cnt += 1
+    bulls, cows = bullscows(inp, hidden_word)
+    inform("Быки: {}, Коровы: {}", bulls, cows)
+
+    return tries_cnt
