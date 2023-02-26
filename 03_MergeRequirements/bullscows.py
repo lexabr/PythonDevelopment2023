@@ -1,6 +1,8 @@
 from typing import Tuple, List
 import random
 import argparse
+import urllib.request
+import urllib.error
 
 def bullscows(guess: str, secret: str) -> Tuple[int, int]:
     cows = len(set(guess) & set(secret))
@@ -36,8 +38,38 @@ def gameplay(ask: callable, inform: callable, words: List[str]) -> int:
     return tries_cnt
 
 
+def start_game(path_to_words: str, length: int) -> None:
+    def process_str(s):
+        if isinstance(s, str):
+            return s.strip()
+        else:
+            return s.decode('utf-8').strip()
+
+    try:
+        if path_to_words.startswith("https://"):
+            file = urllib.request.urlopen(path_to_words)
+        else:
+            file = open(path_to_words)
+        words = list(filter(lambda x: len(x) == length, map(process_str, file.readlines())))
+
+    except urllib.error.HTTPError:
+        print("Wrong URL")
+        return
+    except FileNotFoundError:
+        print("Wrong filepath")
+        return
+    except BaseException:
+        print("Something is wrong")
+        return
+    
+    print(gameplay(ask, inform, words))
+
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="Bulls and cows game")
     parser.add_argument("path_to_words", type=str)
     parser.add_argument("length", type=int, default=5, nargs="?")
     args = parser.parse_args()
+
+    start_game(args.path_to_words, args.length)
