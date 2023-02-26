@@ -62,7 +62,7 @@ def start_game(path_to_words: str, length: int) -> None:
         print("Something is wrong")
         return
     
-    print(gameplay(ask, inform, words))
+    print(f"Won with {gameplay(ask, inform, words)} attempts")
 
 
 
