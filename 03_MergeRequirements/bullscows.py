@@ -7,3 +7,7 @@ def bullscows(guess: str, secret: str) -> Tuple[int, int]:
         if g == s:
             bulls += 1
     return bulls, cows
+
+
+def inform(format_string: str, bulls: int, cows: int) -> None:
+    print(format_string.format(bulls, cows))
