@@ -4,6 +4,8 @@ import argparse
 import urllib.request
 import urllib.error
 import cowsay
+from io import StringIO
+
 
 def bullscows(guess: str, secret: str) -> Tuple[int, int]:
     cows = len(set(guess) & set(secret))
@@ -15,14 +17,13 @@ def bullscows(guess: str, secret: str) -> Tuple[int, int]:
 
 
 def inform(format_string: str, bulls: int, cows: int) -> None:
-    print(cowsay.cowsay(format_string.format(bulls, cows),
-                        cow=random.choice(cowsay.list_cows())))
+    print(cowsay.cowsay(format_string.format(bulls, cows),cowfile=cow))
 
 
 def ask(prompt: str, valid: List[str] = None) -> str:
-    inp = input(cowsay.cowsay(prompt, cow=random.choice(cowsay.list_cows())))
+    inp = input(cowsay.cowsay(prompt, cowfile=cow))
     while valid is not None and inp not in valid:
-        inp = input(cowsay.cowsay(prompt, cow=random.choice(cowsay.list_cows())))
+        inp = input(cowsay.cowsay(prompt, cowfile=cow))
     return inp
 
 
@@ -73,5 +74,19 @@ if __name__ == "__main__":
     parser.add_argument("path_to_words", type=str)
     parser.add_argument("length", type=int, default=5, nargs="?")
     args = parser.parse_args()
+
+    cow = cowsay.read_dot_cow(StringIO('''
+    $the_cow = <<EOC;
+       $thoughts
+        $thoughts
+      | |_| |
+    (/|.   .|\)
+    __________
+    | o     o |__
+    |_________|  \\\\\\
+     |           |||
+    __/__/__/__/
+    EOC
+    '''))
 
     start_game(args.path_to_words, args.length)
