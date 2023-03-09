@@ -6,7 +6,10 @@ import shlex
 optionals_map = {
     '-c': 'cow',
     '-e': 'eyes',
-    '-T': 'tongue'
+    '-T': 'tongue',
+    '-b': 'brackets',
+    '-l': 'width',
+    '-w': 'wrap_text'
 }
 
 cow_opts_to_pass = {
@@ -15,10 +18,18 @@ cow_opts_to_pass = {
     '-T': cowsay.Option.tongue
 }
 
+bubble_opts_to_pass = {
+    '-b': cowsay.THOUGHT_OPTIONS['cowsay'],
+    '-l': 40,
+    '-w': True
+}
+
 
 def extract_ops(optional, opts_to_pass):
     for op, val in zip(optional[::2], optional[1::2]):
-        opts_to_pass[op] = val
+        opts_to_pass[op] = cowsay.THOUGHT_OPTIONS[val] if op == '-b' else val
+        if op == '-l':
+            opts_to_pass[op] = int(val)
     return {optionals_map[op]: val for op, val in opts_to_pass.items()}
 
 
@@ -67,6 +78,24 @@ class CowsayInteractive(cmd.Cmd):
         message, *optional = shlex.split(args)
         opts_to_pass = extract_ops(optional, cow_opts_to_pass)
         print(cowsay.cowthink(message, **opts_to_pass))
+
+    
+    def do_make_bubble(self, args):
+        '''
+        Wraps text is wrap_text is true, then pads text and sets inside a bubble.
+        This is the text that appears above the cows
+        Usage: make_bubble text [-b brackets] [-d width] [-w wrap_text]
+
+        text: string expected to be in bubble
+        brackets: -b cowsay or cowthink
+        width: -l int
+        wrap_text: -w bool, if text should be wrapped
+        '''
+
+        message, *optional = shlex.split(args)
+        opts_to_pass = extract_ops(optional, bubble_opts_to_pass)
+        print(opts_to_pass)
+        print(cowsay.make_bubble(message, **opts_to_pass))
 
 
     def do_exit(self, args):
