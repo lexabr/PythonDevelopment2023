@@ -9,6 +9,18 @@ optionals_map = {
     '-T': 'tongue'
 }
 
+cow_opts_to_pass = {
+    '-c': 'default',
+    '-e': cowsay.Option.eyes,
+    '-T': cowsay.Option.tongue
+}
+
+
+def extract_ops(optional, opts_to_pass):
+    for op, val in zip(optional[::2], optional[1::2]):
+        opts_to_pass[op] = val
+    return {optionals_map[op]: val for op, val in opts_to_pass.items()}
+
 
 class CowsayInteractive(cmd.Cmd):
     prompt = 'type command > '
@@ -37,14 +49,7 @@ class CowsayInteractive(cmd.Cmd):
         '''
 
         message, *optional = shlex.split(args)
-        opts_to_pass = {
-            '-c': 'default',
-            '-e': cowsay.Option.eyes,
-            '-T': cowsay.Option.tongue
-        }
-        for op, val in zip(optional[::2], optional[1::2]):
-            opts_to_pass[op] = val
-        opts_to_pass = {optionals_map[op]: val for op, val in opts_to_pass.items()}
+        opts_to_pass = extract_ops(optional, cow_opts_to_pass)
         print(cowsay.cowsay(message, **opts_to_pass))
 
     
@@ -60,14 +65,7 @@ class CowsayInteractive(cmd.Cmd):
         '''
 
         message, *optional = shlex.split(args)
-        opts_to_pass = {
-            '-c': 'default',
-            '-e': cowsay.Option.eyes,
-            '-T': cowsay.Option.tongue
-        }
-        for op, val in zip(optional[::2], optional[1::2]):
-            opts_to_pass[op] = val
-        opts_to_pass = {optionals_map[op]: val for op, val in opts_to_pass.items()}
+        opts_to_pass = extract_ops(optional, cow_opts_to_pass)
         print(cowsay.cowthink(message, **opts_to_pass))
 
 
