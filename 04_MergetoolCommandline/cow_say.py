@@ -47,6 +47,29 @@ class CowsayInteractive(cmd.Cmd):
         opts_to_pass = {optionals_map[op]: val for op, val in opts_to_pass.items()}
         print(cowsay.cowsay(message, **opts_to_pass))
 
+    
+    def do_cowthink(self, args):
+        '''
+        Prints cowthink string with given message and parameters
+        Usage: cowthink message [-c cow] [-e eye] [-T tongue]
+
+        message: string excpected to be cowsaid
+        cow: -c name of cow file
+        eye: -e custom eye string
+        tongue: -T custom tongue string
+        '''
+
+        message, *optional = shlex.split(args)
+        opts_to_pass = {
+            '-c': 'default',
+            '-e': cowsay.Option.eyes,
+            '-T': cowsay.Option.tongue
+        }
+        for op, val in zip(optional[::2], optional[1::2]):
+            opts_to_pass[op] = val
+        opts_to_pass = {optionals_map[op]: val for op, val in opts_to_pass.items()}
+        print(cowsay.cowthink(message, **opts_to_pass))
+
 
     def do_exit(self, args):
         '''Stop running cowsay cmd'''
