@@ -24,6 +24,15 @@ bubble_opts_to_pass = {
     '-w': True
 }
 
+completion_map = {
+    '-c': cowsay.list_cows(),
+    '-e': ['XX', 'YY', 'ZZ', 'OO', 'RR', 'WW'],
+    '-T': ['NN', 'MM', 'BB', 'VV', 'UU', 'DD'],
+    '-b': ['cowsay', 'cowthink'],
+    '-l': [],
+    '-w': ['True', 'False']
+}
+
 
 def extract_ops(optional, opts_to_pass):
     for op, val in zip(optional[::2], optional[1::2]):
@@ -63,6 +72,12 @@ class CowsayInteractive(cmd.Cmd):
         opts_to_pass = extract_ops(optional, cow_opts_to_pass)
         print(cowsay.cowsay(message, **opts_to_pass))
 
+
+    def complete_cowsay(self, text, line, begidx, endidx):
+        args = shlex.split(line)
+        op = args[-1] if len(text) == 0 else args[-2]
+        return [c for c in completion_map[op] if c.startswith(text)]
+
     
     def do_cowthink(self, args):
         '''
@@ -80,6 +95,12 @@ class CowsayInteractive(cmd.Cmd):
         print(cowsay.cowthink(message, **opts_to_pass))
 
     
+    def complete_cowthink(self, text, line, begidx, endidx):
+        args = shlex.split(line)
+        op = args[-1] if len(text) == 0 else args[-2]
+        return [c for c in completion_map[op] if c.startswith(text)]
+
+    
     def do_make_bubble(self, args):
         '''
         Wraps text is wrap_text is true, then pads text and sets inside a bubble.
@@ -94,8 +115,13 @@ class CowsayInteractive(cmd.Cmd):
 
         message, *optional = shlex.split(args)
         opts_to_pass = extract_ops(optional, bubble_opts_to_pass)
-        print(opts_to_pass)
         print(cowsay.make_bubble(message, **opts_to_pass))
+
+    
+    def complete_make_bubble(self, text, line, begidx, endidx):
+        args = shlex.split(line)
+        op = args[-1] if len(text) == 0 else args[-2]
+        return [c for c in completion_map[op] if c.startswith(text)]
 
 
     def do_exit(self, args):
