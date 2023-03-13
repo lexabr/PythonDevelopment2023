@@ -15,7 +15,11 @@ async def handle_message(message, user_context):
     elif args[0] == "login":
         await login(args, user_context)
     elif args[0] == 'quit':
-        await user_quit(args, user_context)
+        await user_quit(user_context)
+    elif args[0] == 'who':
+        await who(user_context)
+    elif args[0] == 'cows':
+        await cows(user_context)
 
 
 async def login(args, user_context):
@@ -39,7 +43,7 @@ async def login(args, user_context):
             await user_context['writer'].drain()
 
 
-async def user_quit(args, user_context):
+async def user_quit(user_context):
     user_context['send'].cancel()
     user_context['recieve'].cancel()
 
@@ -54,6 +58,20 @@ async def user_quit(args, user_context):
 
     user_context['writer'].close()
     await user_context['writer'].wait_closed()
+
+
+async def who(user_context):
+    me = user_cows[user_context['me']] if user_context['me'] in users else user_context['me']
+    print(f"[User {me}]: who")
+    user_context['writer'].write(f"Online users: {', '.join(user_cows.values())}\n".encode())
+    await user_context['writer'].drain()
+
+
+async def cows(user_context):
+    me = user_cows[user_context['me']] if user_context['me'] in users else user_context['me']
+    print(f"[User {me}]: cows")
+    user_context['writer'].write(f"Online users: {', '.join([c for c in cowsay.list_cows() if c not in user_cows.values()])}\n".encode())
+    await user_context['writer'].drain()
 
 
 async def send_all(message, except_user=None):
