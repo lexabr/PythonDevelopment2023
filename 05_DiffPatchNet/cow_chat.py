@@ -5,6 +5,7 @@ import cowsay
 
 users = {}
 user_cows = {}
+cows_user = {}
 cow_set = set(cowsay.list_cows())
 
 
@@ -20,6 +21,10 @@ async def handle_message(message, user_context):
         await who(user_context)
     elif args[0] == 'cows':
         await cows(user_context)
+    elif args[0] == 'say':
+        await say(args, user_context)
+    elif args[0] == 'yield':
+        await yld(args, user_context)
 
 
 async def login(args, user_context):
@@ -30,6 +35,7 @@ async def login(args, user_context):
         if args[1] in (cow_set - set(user_cows.values())):
             users[user_context['me']] = user_context['queue']
             user_cows[user_context['me']] = args[1]
+            cows_user[args[1]] = user_context['me']
 
             print(f"[New user]: {args[1]}")
             user_context['writer'].write("Successful registration!\n".encode())
@@ -54,6 +60,7 @@ async def user_quit(user_context):
 
     del users[user_context['me']]
     del user_cows[user_context['me']]
+    del cows_user[cow]
     await send_all(f"User {cow} left the chat")
 
     user_context['writer'].close()
@@ -74,9 +81,31 @@ async def cows(user_context):
     await user_context['writer'].drain()
 
 
+async def say(args, user_context):
+    if user_context['me'] not in users:
+        user_context['writer'].write("You can't send anything before login\n".encode())
+        await user_context['writer'].drain()
+    elif args[1] not in cows_user:
+        user_context['writer'].write("This user is not registered\n".encode())
+        await user_context['writer'].drain()
+    else:
+        print(f"[User {user_cows[user_context['me']]}]: {' '.join(args)}")
+        us = cows_user[args[1]]
+        await users[us].put(f"Private message from: {user_cows[user_context['me']]}\n{cowsay.cowsay(' '.join(args[2:]).strip(), cow=user_cows[user_context['me']])}")
+
+
+async def yld(args, user_context):
+    if user_context['me'] not in users:
+        user_context['writer'].write("You can't send anything before login\n".encode())
+        await user_context['writer'].drain()
+    else:
+        print(f"[User {user_cows[user_context['me']]}]: {' '.join(args)}")
+        await send_all(f"User: {user_cows[user_context['me']]}\n{cowsay.cowsay(' '.join(args[1:]).strip(), cow=user_cows[user_context['me']])}")
+
+
 async def send_all(message, except_user=None):
-    for out in users.values():
-        if out is not except_user:
+    for us, out in users.items():
+        if us is not except_user:
             await out.put(message)
 
 
