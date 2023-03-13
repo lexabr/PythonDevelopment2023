@@ -8,30 +8,52 @@ user_cows = {}
 cow_set = set(cowsay.list_cows())
 
 
-async def handle_message(message, me, queue_me, reader, writer):
+async def handle_message(message, user_context):
     args = shlex.split(message)
-
     if len(args) == 0:
         return
     elif args[0] == "login":
-        if me in users:
-            writer.write(f"You've already logged. Login: {user_cows[me]}\n".encode())
-            await writer.drain()
-        else:
-            if args[1] in (cow_set - set(user_cows.values())):
-                users[me] = queue_me
-                user_cows[me] = args[1]
+        await login(args, user_context)
+    elif args[0] == 'quit':
+        await user_quit(args, user_context)
 
-                print(f"[New user]: {args[1]}")
-                writer.write("Successful registration!\n".encode())
-                await writer.drain()
-                await send_all(f"New user: {args[1]}")
-            elif args[1] in user_cows.values():
-                writer.write("Login already in use, please, choose another\n".encode())
-                await writer.drain()
-            else:
-                writer.write("Invalid login, please, choose another\n".encode())
-                await writer.drain()
+
+async def login(args, user_context):
+    if user_context['me'] in users:
+        user_context['writer'].write(f"You've already logged. Login: {user_cows[user_context['me']]}\n".encode())
+        await user_context['writer'].drain()
+    else:
+        if args[1] in (cow_set - set(user_cows.values())):
+            users[user_context['me']] = user_context['queue']
+            user_cows[user_context['me']] = args[1]
+
+            print(f"[New user]: {args[1]}")
+            user_context['writer'].write("Successful registration!\n".encode())
+            await user_context['writer'].drain()
+            await send_all(f"New user: {args[1]}")
+        elif args[1] in user_cows.values():
+            user_context['writer'].write("Login already in use, please, choose another\n".encode())
+            await user_context['writer'].drain()
+        else:
+            user_context['writer'].write("Invalid login, please, choose another\n".encode())
+            await user_context['writer'].drain()
+
+
+async def user_quit(args, user_context):
+    user_context['send'].cancel()
+    user_context['recieve'].cancel()
+
+    cow = user_cows[user_context['me']]
+    print(f"[Quit user]: {cow}")
+    user_context['writer'].write("Good bye!\n".encode())
+    await user_context['writer'].drain()
+
+    del users[user_context['me']]
+    del user_cows[user_context['me']]
+    await send_all(f"User {cow} left the chat")
+
+    user_context['writer'].close()
+    await user_context['writer'].wait_closed()
 
 
 async def send_all(message, except_user=None):
@@ -47,27 +69,26 @@ async def chat(reader, writer):
     send = asyncio.create_task(reader.readline())
     receive = asyncio.create_task(queue_me.get())
 
+    user_context = {
+        'me': me,
+        'queue': queue_me,
+        'send': send,
+        'recieve': receive,
+        'reader': reader,
+        'writer': writer
+    }
+
     while not reader.at_eof():
         done, pending = await asyncio.wait([send, receive], return_when=asyncio.FIRST_COMPLETED)
         for q in done:
             if q is send:
                 send = asyncio.create_task(reader.readline())
                 message = q.result().decode()
-                await handle_message(message, me, queue_me, reader, writer)
-
-                # for out in users.values():
-                #     if out is not users[me]:
-                #         await out.put(f"{me} {q.result().decode().strip()}")
+                await handle_message(message, user_context)
             elif q is receive:
                 receive = asyncio.create_task(users[me].get())
                 writer.write(f"{q.result()}\n".encode())
                 await writer.drain()
-    send.cancel()
-    receive.cancel()
-    print(me, "DONE")
-    del users[me]
-    writer.close()
-    await writer.wait_closed()
 
 
 async def main():
